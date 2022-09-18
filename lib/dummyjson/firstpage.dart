@@ -41,23 +41,50 @@ class _FirstPageState extends State<FirstPage> {
         title: Text("First Page"),
       ),
       body: status
-          ? GridView.builder(
-              itemCount: d!.products!.length,
-              itemBuilder: (context, index) {
-                return GridTile(
-                  child: Container(
-                    height: 100,
-                    width: 100,
-                    child: Image.network("${d!.products![index].thumbnail}",fit: BoxFit.fill,),
-                  ),
-                  footer: ListTile(
-                    leading: Text("${d!.products![index].title}"),
-                    trailing: Text("${d!.products![index].price}"),
-                  ),
-                );
-              },
-              gridDelegate:
-                  SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2))
+          ? Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: GridView.builder(
+                  itemCount: d!.products!.length,
+                  itemBuilder: (context, index) {
+                    return InkWell(
+                        onTap: () {
+                          Navigator.pushReplacement(context, MaterialPageRoute(
+                            builder: (context) {
+                              return Next(d!.products![index]);
+                            },
+                          ));
+                        },
+                        child: GridTile(
+                          footer: Container(
+                              height: 40,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: Colors.grey[300],
+                                border: Border.all(width: .1),
+                              ),
+                              child: Column(
+                                children: [
+                                  Text("${d!.products![index].title}",
+                                      overflow: TextOverflow.ellipsis,
+                                      softWrap: true),
+                                  Text("\$${d!.products![index].price}")
+                                ],
+                              )),
+                          child: Container(
+                              decoration: BoxDecoration(
+                            border: Border.all(width: .1),
+                            borderRadius: BorderRadius.circular(10),
+                            image: DecorationImage(
+                                image: NetworkImage(
+                                    "${d!.products![index].thumbnail}")),
+                          )),
+                        ));
+                  },
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10)),
+            )
           : Center(
               child: CircularProgressIndicator(),
             ),
@@ -151,5 +178,98 @@ class Products {
     data['thumbnail'] = this.thumbnail;
     data['images'] = this.images;
     return data;
+  }
+}
+
+class Next extends StatefulWidget {
+  Products products;
+
+  Next(this.products);
+
+  @override
+  State<Next> createState() => _NextState();
+}
+
+class _NextState extends State<Next> {
+  PageController pageController = PageController();
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    pageController = PageController(initialPage: 0);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return WillPopScope(
+        child: Scaffold(
+          body: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+                  width: double.infinity,
+                  child: PageView.builder(
+                    itemCount: widget.products.images!.length,
+                    controller: pageController,
+                    itemBuilder: (context, index) {
+                      return Image.network(
+                        "${widget.products.images![index]}",
+                        fit: BoxFit.fill,
+                      );
+                    },
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "${widget.products.title}",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("  \$${widget.products.price}"
+                                " (${widget.products.discountPercentage} \%off)"),
+                            Text(
+                              "Rating :${widget.products.rating}",
+                            )
+                          ],
+                        ),
+                        Text(
+                          "description : ${widget.products.description}",
+                        ),
+                        Text(
+                          "stock : ${widget.products.stock}",
+                        ),
+                        Text(
+                          "brand : ${widget.products.brand}",
+                        ),
+                        Text(
+                          "category : ${widget.products.category}",
+                        ),
+                      ]),
+                ),
+              ),
+            ],
+          ),
+        ),
+        onWillPop: goback);
+  }
+
+  Future<bool> goback() {
+    Navigator.pushReplacement(context, MaterialPageRoute(
+      builder: (context) {
+        return FirstPage();
+      },
+    ));
+    return Future.value();
   }
 }

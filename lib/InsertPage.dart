@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:sqflite/sqlite_api.dart';
 
 class InsertPage extends StatefulWidget {
-  const InsertPage({Key? key}) : super(key: key);
+  Map? m;
+
+  InsertPage({this.m});
 
   @override
   State<InsertPage> createState() => _InsertPageState();
@@ -12,6 +14,7 @@ class InsertPage extends StatefulWidget {
 
 class _InsertPageState extends State<InsertPage> {
   Database? db;
+  Map? m;
   TextEditingController tname = TextEditingController();
   TextEditingController tcontact = TextEditingController();
   TextEditingController tpass = TextEditingController();
@@ -32,6 +35,18 @@ class _InsertPageState extends State<InsertPage> {
         db = value;
       },
     );
+    m = widget.m;
+    if (widget.m != null) {
+      tname.text = widget.m!['name'];
+      tcontact.text = widget.m!['contact'];
+      temail.text = widget.m!['email'];
+      tpass.text = widget.m!['pass'];
+      radio = widget.m!['radio'];
+      learning = widget.m!['learning'];
+      photography = widget.m!['photography'];
+      listenmusic = widget.m!['listenmusic'];
+      cricket = widget.m!['cricket'];
+    }
   }
 
   @override
@@ -181,24 +196,43 @@ class _InsertPageState extends State<InsertPage> {
               SizedBox(
                 height: 30,
               ),
-              ElevatedButton(
-                  onPressed: () async {
-                    String name = tname.text;
-                    String contact = tcontact.text;
-                    String email = temail.text;
-                    String pass = tpass.text;
+              m == null
+                  ? ElevatedButton(
+                      onPressed: () async {
+                        String name = tname.text;
+                        String contact = tcontact.text;
+                        String email = temail.text;
+                        String pass = tpass.text;
 
-                    String qry =
-                        "insert into Test (name,contact,email,pass,radio,learning,cricket,listenmusic,photography) values ('$name','$contact','$email','$pass','$radio','$learning','$cricket','$listenmusic','$photography')";
-                    print(qry);
-                    await db!.rawInsert(qry);
-                    Navigator.pushReplacement(context, MaterialPageRoute(
-                      builder: (context) {
-                        return ViewPage();
+                        String qry =
+                            "insert into Test (name,contact,email,pass,radio,learning,cricket,listenmusic,photography) values ('$name','$contact','$email','$pass','$radio','$learning','$cricket','$listenmusic','$photography')";
+                        print(qry);
+                        await db!.rawInsert(qry);
+                        Navigator.pushReplacement(context, MaterialPageRoute(
+                          builder: (context) {
+                            return ViewPage();
+                          },
+                        ));
                       },
-                    ));
-                  },
-                  child: Text("Submit"))
+                      child: Text("Submit"))
+                  : ElevatedButton(
+                      onPressed: () async {
+                        String name = tname.text;
+                        String contact = tcontact.text;
+                        String email = temail.text;
+                        String pass = tpass.text;
+
+                        String qry =
+                            'update Test set name="$name",contact="$contact",email="$email",pass="$pass",radio="$radio",learning="$learning",photography="$photography",listenmusic="$listenmusic",cricket="$cricket" where id=${widget.m!['id']}';
+                        print(qry);
+                        await db!.rawUpdate(qry);
+                        Navigator.pushReplacement(context, MaterialPageRoute(
+                          builder: (context) {
+                            return ViewPage();
+                          },
+                        ));
+                      },
+                      child: Text("Update"))
             ],
           ),
         ),
